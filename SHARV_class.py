@@ -12,7 +12,7 @@ class Sharv():
             self.data = data.values.reshape(len(data))
             self.dates = data.index
         else:
-            self.data = data
+            self.data = np.array(data).reshape(len(data))
             self.dates = None
 
         self.asymmetry = asymmetry
@@ -84,9 +84,9 @@ class Sharv():
         res = y / np.sqrt(sigma_sq)
 
         if self.dates is not None:
-            sigma_sq = pd.DataFrame(sigma_sq, index=self.dates)
-            vol_vol = pd.DataFrame(vol_vol, index=self.dates)
-            res = pd.DataFrame(res, index=self.dates)
+            sigma_sq = pd.DataFrame(sigma_sq, index=self.dates, columns=['Volatility'])
+            vol_vol = pd.DataFrame(vol_vol, index=self.dates, columns=['Volatility of Volatility'])
+            res = pd.DataFrame(res, index=self.dates, columns=['Standardized residuals'])
 
         return {'Loglikelihood vector': log_f, 'Volatility': np.sqrt(sigma_sq), 'Vol of vol': vol_vol,
                 'Standardized residuals': res}
@@ -99,9 +99,9 @@ class Sharv():
         else:
             mu, beta, omega1, gamma1, omega2, gamma2 = par[0], par[1], par[2], par[3], par[4], par[5]
 
-        var = temp_res["volatility"] ** 2
+        var = temp_res["Volatility"] ** 2
         forecast = np.zeros(step)
-        forecast[1] = omega1 + 0.5 * omega2 + (beta + gamma1 + 0.5 * gamma2) * var[-1]
+        forecast[0] = omega1 + 0.5 * omega2 + (beta + gamma1 + 0.5 * gamma2) * var[-1]
 
         # For multistep forecast, use recursive formula with unconditional mean
         mean_vsq = (omega1 + 0.5 * omega2) / (1 - beta - gamma1 - 0.5 * gamma2)

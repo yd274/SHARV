@@ -37,7 +37,7 @@ plt.show()
 
 # Compare the volatility estimation with realized volatility (RV). RV for DJIA is obtained from a high frequency trading
 # platform
-RV = pd.read_excel('rv_dj.xlsx')
+RV = pd.read_excel('Data/rv_dj.xlsx')
 RV['Date'] = pd.to_datetime(RV['DateTime'], unit='D', origin='1899-12-30')
 RV.set_index('Date', inplace=True)
 RV = np.sqrt(RV['Return'])
@@ -50,17 +50,70 @@ combined_vol.columns = ['SHARV', 'ASHARV', 'GARCH', 'RV']
 combined_vol = combined_vol.dropna()
 
 # Compute MSE for each model column
-mse_values = ((combined_vol[['SHARV', 'ASHARV', 'GARCH']].subtract(combined_vol['RV'], axis=0))**2).mean()
+mse = ((combined_vol[['SHARV', 'ASHARV', 'GARCH']].subtract(combined_vol['RV'], axis=0))**2).mean()
 
 # Convert results into a new DataFrame
-mse_df = pd.DataFrame(mse_values, columns=['MSE'])
+mse = pd.DataFrame(mse, columns=['MSE'])
 
 # Volatility estimate comparisons are often dominated by outliers, let's also use the QLIKE loss function to compare
 # the accuracy, which is far less acute to the influence of outliers
 
 # QLIKE formula: (y / y_hat) - log(y / y_hat) - 1
 ratio = combined_vol[['SHARV', 'ASHARV', 'GARCH']].div(combined_vol['RV'], axis=0).pow(-1) # This is y / y_hat
-qlike_values = (ratio - np.log(ratio) - 1).mean()
+qlike = (ratio - np.log(ratio) - 1).mean()
 
-# 3. Combine into a results DataFrame
-qlike_df = pd.DataFrame(qlike_values, columns=['QLIKE'])
+# Combine into a results DataFrame
+qlike = pd.DataFrame(qlike, columns=['QLIKE'])
+
+# Out of sample forecast (for 1-step, 5-step and 10-step ahead forecast)
+import warnings
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+sharv_forecast = pd.concat(out_of_sample(y))
+ashatv_forecast = pd.concat(out_of_sample(y, model='ASHARV'))
+garch_forecast = pd.concat(out_of_sample(y, model='GARCH'))
+forecast = pd.concat([sharv_forecast, ashatv_forecast, garch_forecast, RV], axis=1)
+forecast.columns = ['SHARV', 'ASHARV', 'GARCH', 'RV']
+forecast = forecast.dropna()
+
+# Compute MSE for each model column
+mse_oos = ((forecast[['SHARV', 'ASHARV', 'GARCH']].subtract(forecast['RV'], axis=0))**2).mean()
+mse_oos = pd.DataFrame(mse_oos, columns=['MSE'])
+# Compute QLIKE for each model column
+ratio = forecast[['SHARV', 'ASHARV', 'GARCH']].div(forecast['RV'], axis=0).pow(-1) # This is y / y_hat
+qlike_oos = (ratio - np.log(ratio) - 1).mean()
+qlike_oos = pd.DataFrame(qlike_oos, columns=['QLIKE'])
+
+# 5-step
+sharv_forecast_5 = pd.concat(out_of_sample(y, step=5))
+asharv_forecast_5 = pd.concat(out_of_sample(y, step=5, model='ASHARV'))
+garchforecast_5 = pd.concat(out_of_sample(y, step=5, model='GARCH'))
+forecast_5 = pd.concat([sharv_forecast_5, asharv_forecast_5, garchforecast_5], axis=1)
+forecast_5 = forecast_5.join(RV, how='left')
+forecast_5.columns = ['SHARV', 'ASHARV', 'GARCH', 'RV']
+forecast_5 = forecast_5.dropna()
+
+# Compute MSE for each model column
+mse_oos_5 = ((forecast_5[['SHARV', 'ASHARV', 'GARCH']].subtract(forecast_5['RV'], axis=0))**2).mean()
+mse_oos_5 = pd.DataFrame(mse_oos_5, columns=['MSE'])
+# Compute QLIKE for each model column
+ratio = forecast_5[['SHARV', 'ASHARV', 'GARCH']].div(forecast_5['RV'], axis=0).pow(-1) # This is y / y_hat
+qlike_oos_5 = (ratio - np.log(ratio) - 1).mean()
+qlike_oos_5 = pd.DataFrame(qlike_oos_5, columns=['QLIKE'])
+
+# 10-step
+sharv_forecast_10 = pd.concat(out_of_sample(y, step=10))
+asharv_forecast_10 = pd.concat(out_of_sample(y, step=10, model='ASHARV'))
+garchforecast_10 = pd.concat(out_of_sample(y, step=10, model='GARCH'))
+forecast_10 = pd.concat([sharv_forecast_10, asharv_forecast_10, garchforecast_10], axis=1)
+forecast_10 = forecast_10.join(RV, how='left')
+forecast_10.columns = ['SHARV', 'ASHARV', 'GARCH', 'RV']
+forecast_10 = forecast_10.dropna()
+
+# Compute MSE for each model column
+mse_oos_10 = ((forecast_10[['SHARV', 'ASHARV', 'GARCH']].subtract(forecast_10['RV'], axis=0))**2).mean()
+mse_oos_10 = pd.DataFrame(mse_oos_10, columns=['MSE'])
+# Compute QLIKE for each model column
+ratio = forecast_10[['SHARV', 'ASHARV', 'GARCH']].div(forecast_10['RV'], axis=0).pow(-1) # This is y / y_hat
+qlike_oos_10 = (ratio - np.log(ratio) - 1).mean()
+qlike_oos_10 = pd.DataFrame(qlike_oos_10, columns=['QLIKE'])
