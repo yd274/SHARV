@@ -3,7 +3,10 @@ import pandas as pd
 from arch import arch_model
 import scipy as sp
 from scipy.optimize import minimize, LinearConstraint
-from loglike import compute_loglike
+from loglike import *
+from statsmodels.iolib.summary import Summary
+from statsmodels.iolib.table import SimpleTable, default_txt_fmt
+from Utilities import *
 
 
 class Sharv():
@@ -145,19 +148,88 @@ class Sharv():
                        method='SLSQP', bounds=bounds, constraints=lin_constr,
                        options={'ftol': 1e-8, 'maxiter': maxiter})
 
-        """fit_result = minimize(compute_loglike, start_params, args=(self.data, int(self.asymmetry)),
-                       method='trust-constr', bounds=bounds, constraints=lin_constr, options={'xtol': 1e-8, 'gtol': 1e-8,
-                                                                                       'maxiter': maxiter})"""
-        #fit_result = super(Sharv, self).fit(start_params=start_params, maxiter=maxiter, maxfun=maxfun, **kwargs)
+        # Compute the QLM standard errors (Sandwich form, NOT the inverse of negative Hessian since we allow for
+        # potential model misspecification and use quasi-maximum likelihood theory. Specifically,
+        # Theta hat - Theta ~ Normal(0, V^-1 @ S @ V^-1), where V is the inverse negative Hessian, S = s @ s.T where
+        # s is the score vector
+        pars = fit_result.x
+        hes = -finite_difference_cython(self.data, pars, asymmetry=self.asymmetry, dh=1e-4 if self.asymmetry else 1e-7)
+
+        def input_fun(par, data):
+            return self.filter(par)['Loglikelihood vector']
+
+        score = score_vec(pars, self.data, input_fun)
+        temp = np.linalg.inv(-hes) @ score @ np.linalg.inv(-hes) / len(self.data)
+        std = np.sqrt(np.diag(temp))
+        t_stats = np.array(pars) / np.array(std)
+        p_values = [2 * (1 - sp.stats.norm.cdf(np.abs(t))) for t in t_stats]
+        t_crit = sp.stats.norm.ppf(0.975)
+        ci_lower = fit_result.x - t_crit * std
+        ci_upper = fit_result.x + t_crit * std
+        loglike = -compute_loglike(pars, self.data, self.asymmetry) * len(self.data)
+        bic = len(pars) * np.log(len(self.data)) - 2 * loglike
+        bic_str = f"{len(pars) * np.log(len(self.data)) - 2 * loglike:.4f}"
+        par_name = ['mu', 'beta', 'alpha', 'psi', 'omega', 'phi'] if self.asymmetry else \
+            ['beta', 'alpha', 'psi']
+
+        # Create statsmodels-like summary table
+        top_data = [
+            ["Dep. Variable:", "y", "Model:", "Quasi-ML"],
+            ["No. Observations:", str(len(self.data)), "Log-Likelihood:", f"{loglike:.4f}"],
+            ["Date:", "Sat, 07 Mar 2026", "BIC:", f"{bic_str}"]
+        ]
+        params_data = [[pars[i], std[i], t_stats[i], p_values[i], ci_lower[i], ci_upper[i]]
+                       for i in range(len(pars))]
+        headers = ["coef", "std err", "t", "P>|t|", "[0.025", "0.975]"]
+        param_fmt = default_txt_fmt.copy()
+        param_fmt.update({
+            'stubs_align': 'l',
+            'stubs_fmts': ["%-10s"],  # Fixed 10 chars for names
+            'data_aligns': 'r',
+            'data_fmts': ["%10.4f"] * 2 + ["%10.3f"] * 4,  # 6 cols * 10 chars = 60
+            'colsep': '',  # We handle spacing inside the %10 format
+            'header_align': 'r'
+        })
+        top_fmt = default_txt_fmt.copy()
+        top_fmt.update({
+            'data_aligns': 'l',
+            'data_fmts': ["%-18s", "%-17s", "%-17s", "%-18s"],
+            'colsep': ''  # 18+17+17+18 = Exactly 70
+        })
+        top_table = SimpleTable(top_data, txt_fmt=top_fmt)
+        param_table = SimpleTable(params_data, headers=headers, stubs=par_name, txt_fmt=param_fmt)
+        table_width = 70
+
+        sm_summary = Summary()
+        model_prefix = "Asymmetric " if self.asymmetry else ""
+        title = f"{model_prefix}Stochastic Heteroskedastic AutoRegressive Volatility Model Results"
+        title_fmt = default_txt_fmt.copy()
+        title_fmt.update({
+            'data_aligns': 'c',    # Center the data
+            'border_bottom': '',   # Remove bottom border so it flows into the next table
+        })
+        title_table = SimpleTable([[title.center(table_width)]], txt_fmt=title_fmt)
+        sm_summary.tables.append(title_table)
+        sm_summary.tables.append(top_table)
+        sm_summary.tables.append(param_table)
 
         class SharvFitResult:
-            def __init__(self, fit_result, model):
+            def __init__(self, fit_result, model, std, p_values, loglike, bic, summary_obj):
                 self._fit_result = fit_result
                 self._model = model
                 self.params = fit_result.x
+                self.std = std
+                self.bic = bic
+                self.pvalues = p_values
+                self.loglike = loglike
+                self._summary = summary_obj
 
             def __getattr__(self, name):
                 return getattr(self._fit_result, name)
+
+            def summary(self):
+                """Returns the statsmodels-like summary table"""
+                return self._summary
 
             def filter(self):
                 return self._model.filter(self.params)
@@ -168,4 +240,4 @@ class Sharv():
             def VaR_forecast(self, q=0.05):
                 return self._model.VaR_forecast(self.params, q=q)
 
-        return SharvFitResult(fit_result, self)
+        return SharvFitResult(fit_result, self, std, p_values, loglike, bic, sm_summary)

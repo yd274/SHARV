@@ -62,3 +62,52 @@ def compute_loglike(double[:] par,
         return 1e15
 
     return negloglike
+
+def finite_difference_cython(double[:] data, double[:] par, double dh=1e-7, int asymmetry=0):
+    cdef int n = par.shape[0]
+    cdef int i, j
+
+    # 1. Pre-calculate step sizes h
+    cdef double[:] h = np.empty(n, dtype=np.float64)
+    for i in range(n):
+        h[i] = dh if (1e-4 * fabs(par[i])) < dh else (1e-4 * fabs(par[i]))
+
+    # 2. Initialize Hessian
+    cdef double[:, :] hessian = np.zeros((n, n), dtype=np.float64)
+
+    cdef double f_pp, f_pm, f_mp, f_mm
+    cdef double hi, hj
+
+    for i in range(n):
+        for j in range(i, n):
+            par_ij_plus = np.copy(par)
+            par_ij_minus = np.copy(par)
+            par_ij_minus2 = np.copy(par)
+            par_ij_minus3 = np.copy(par)
+
+            # f_pp (par + hi, par + hj)
+            par_ij_plus[i] += h[i]
+            par_ij_plus[j] += h[j]
+            f_pp = compute_loglike(par_ij_plus, data, asymmetry)
+
+            # f_pm (par + hi, par - hj)
+            par_ij_minus[i] += h[i]
+            par_ij_minus[j] -= h[j]
+            f_pm = compute_loglike(par_ij_minus, data, asymmetry)
+
+            # f_mm (par - hi, par - hj)
+            par_ij_minus2[i] -= h[i]
+            par_ij_minus2[j] -= h[j]
+            f_mm = compute_loglike(par_ij_minus2, data, asymmetry)
+
+            # f_mp (par - hi, par + hj)
+            par_ij_minus3[i] -= h[i]
+            par_ij_minus3[j] += h[j]
+            f_mp = compute_loglike(par_ij_minus3, data, asymmetry)
+
+            # Calculate derivative
+            hessian[i, j] = (f_pp - f_pm - f_mp + f_mm) / (4.0 * h[i] * h[j])
+            if i != j:
+                hessian[j, i] = hessian[i, j]
+
+    return np.asarray(hessian)

@@ -2,6 +2,9 @@ from SHARV_class import *
 from Utilities import *
 import matplotlib.pyplot as plt
 from arch import arch_model
+from loglike import *
+from forecast_funcs import *
+
 
 data = pd.read_excel('Data/DJI.xlsx')
 data['Date'] = pd.to_datetime(data['Date'], unit='D', origin='1899-12-30')
@@ -15,8 +18,18 @@ y = data[['Close']].dropna()
 
 # Fit the sharv model
 sharv_res = Sharv(y).fit()
+print(sharv_res.summary())
 # Asymmetric version
 asharv_res = Sharv(y, asymmetry=True).fit()
+print(asharv_res.summary())
+hes = -finite_difference_cython(y.values.reshape(len(y)), asharv_res.params,
+                               asymmetry=True, dh=1e-4)
+std_1 = np.sqrt(np.diag(np.linalg.inv(-hes))/len(y))
+score = score_vec(asharv_res.params, y, asymmetry=True)
+std_2 = np.sqrt(np.diag(np.linalg.inv(score))/len(y))
+
+temp = np.linalg.inv(-hes) @ score @ np.linalg.inv(-hes) / len(y)
+std = np.sqrt(np.diag(temp))
 
 # Benchmark model
 garch = arch_model(y, mean="Zero", p=1, o=0, q=1).fit(disp=0)

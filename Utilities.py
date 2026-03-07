@@ -1,8 +1,7 @@
-import numpy as np
-import pandas as pd
-import scipy as sp
 from SHARV_class import *
 from arch import arch_model
+import pandas as pd
+import numpy as np
 
 def pdf_sharv(par, data, model='SHARV'):
     """
@@ -42,66 +41,68 @@ def pdf_sharv(par, data, model='SHARV'):
 
     return result
 
-def garch_forecast(data, model_res, step=1):
-    """
-    The arch package has built-in forecast function. Only need this because we do not want to update parameter estimate
-    for every loop to save computation cost
-    :param data:
-    :param params:
-    :return:
-    """
-    beta = model_res.params['beta[1]']
-    omega = model_res.params['omega']
-    alpha = model_res.params['alpha[1]']
 
-    var = np.zeros(step)
-    var[0] = omega + beta * model_res.conditional_volatility[-1] ** 2 + alpha * data[-1] ** 2
-    if step > 1:
-        for i in range(1, step):
-            var[i] = omega + (beta + alpha) * var[i - 1]
+def finite_difference(par, data, dh=1e-4, asymmetry=False):
+    if isinstance(data, pd.DataFrame):
+        data = data.values.reshape(len(data))
 
-    return np.sqrt(var)
+    n = len(par)
+    par = np.array(par, dtype=np.float64).flatten()
+    T = len(data)
+    # MATLAB-style step size (eps^(1/4))
+    h = np.array([max(dh, 1e-4 * np.abs(x)) for x in par], dtype=np.float64)
 
-def out_of_sample(data, step=1, update=50, train_test_split=0.9, model='SHARV'):
-    """
-    Out of sample volatility forecast for SHARV, ASHARV and GARCH
-    :param data: pass Series for easy comparison with realized volatility with dates
-    :param step: forecast step
-    :param update: how many step do you want to re-estimate the model.
-    :param train_test_split: percentage of training data
-    :param model:
-    :return:
-    """
-    if model == 'ASHARV':
-        asymmetry = True
-    else:
-        asymmetry = False
+    hessian = np.zeros((n, n), dtype=np.float64)
 
-    dates = data.index
-    data = data.values
-    train_len = int(len(data) * train_test_split)
-    forecast = []
-    for i in range(train_len, len(data) - update - step, update):
-        # Only update the parameter estimation every update-th time
-        train_data = data[:i]
-        if model == 'GARCH':
-            model_res = arch_model(train_data, mean="Zero", p=1, o=0, q=1).fit(disp=0)
-        else:
-            pars = Sharv(train_data, asymmetry=asymmetry).fit().params
+    for i in range(n):
+        for j in range(i, n):
+            par_ij_plus = par.copy()
+            par_ij_minus = par.copy()
+            par_ij_plus[i] += h[i]
+            par_ij_plus[j] += h[j]
+            par_ij_minus[i] += h[i]
+            par_ij_minus[j] -= h[j]
+            par_ij_minus2 = par.copy()
+            par_ij_minus2[i] -= h[i]
+            par_ij_minus2[j] -= h[j]
+            par_ij_minus3 = par.copy()
+            par_ij_minus3[i] -= h[i]
+            par_ij_minus3[j] += h[j]
 
-        for j in range(i, min(i + update, len(data) - step)):
-            # Use the same parameter to forecast when new data comes in until the next update round
-            temp_date = dates[j:j + step]
-            if model == 'GARCH':
-                temp_forecast = garch_forecast(data[:j], model_res, step=step)
-            else:
-                temp_forecast = Sharv(data[:j], asymmetry=asymmetry).vol_forecast(pars, step=step)
+            f_plus_plus = compute_loglike(par_ij_plus, data, asymmetry)
+            f_plus_minus = compute_loglike(par_ij_minus, data, asymmetry)
+            f_minus_plus = compute_loglike(par_ij_minus3, data, asymmetry)
+            f_minus_minus = compute_loglike(par_ij_minus2, data, asymmetry)
 
-            temp = pd.DataFrame(temp_forecast, index=temp_date, columns=['Forecast'])
-            forecast.append(temp)
+            hessian[i, j] = (f_plus_plus - f_plus_minus - f_minus_plus + f_minus_minus) / (4 * h[i] * h[j])
+            if i != j:
+                hessian[j, i] = hessian[i, j]
 
-    return forecast
+    return hessian
 
+def score_vec(par, data, fun, dh=1e-7):
+    if isinstance(data, pd.DataFrame):
+        data = data.values.reshape(len(data))
 
+    # Define step size for each parameter
+    h = np.array([max(dh, 1e-4 * np.abs(x)) for x in par], dtype=np.float64)
+
+    score = np.zeros((len(data), len(par)))
+    for i in range(len(par)):
+        par_up = par.copy()
+        par_down = par.copy()
+        par_up[i] = par[i] + h[i]
+        par_down[i] = par[i] - h[i]
+        fun_up = fun(par_up, data)
+        fun_down = fun(par_down, data)
+        temp = (fun_up - fun_down) / (2 * h[i])
+        score[:, i] = np.array(temp).reshape(len(temp))
+
+    score = np.delete(score, 0, axis=0)
+    temp = np.einsum('ij,ik->ijk', score, score)
+
+    score_vec = np.mean(temp, axis=0)
+    score_vec = np.squeeze(score_vec)
+    return score_vec
 
 
