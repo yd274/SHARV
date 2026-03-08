@@ -15,7 +15,7 @@ data = data.dropna()
 data['Close'] = np.log(data['Close']).diff() * 100
 
 y = data[['Close']].dropna()
-
+"""
 # Fit the sharv model
 sharv_res = Sharv(y).fit()
 print(sharv_res.summary())
@@ -130,8 +130,16 @@ mse_oos_10 = pd.DataFrame(mse_oos_10, columns=['MSE'])
 ratio = forecast_10[['SHARV', 'ASHARV', 'GARCH']].div(forecast_10['RV'], axis=0).pow(-1) # This is y / y_hat
 qlike_oos_10 = (ratio - np.log(ratio) - 1).mean()
 qlike_oos_10 = pd.DataFrame(qlike_oos_10, columns=['QLIKE'])
-
+"""
 # VaR forecast
 asharv_var = out_of_sample_var(y, model='ASHARV', q=0.01)
 sharv_var = out_of_sample_var(y, model='SHARV', q=0.01)
 garch_var = out_of_sample_var(y, model='GARCH', q=0.01)
+p_vals = pd.DataFrame([asharv_var['p-value'], sharv_var['p-value'], garch_var['p-value']],
+                      index=['ASHARV', 'SHARV', 'GARCH'], columns=['91% VaR'])
+asharv_var = out_of_sample_var(y, model='ASHARV', q=0.05)
+sharv_var = out_of_sample_var(y, model='SHARV', q=0.05)
+garch_var = out_of_sample_var(y, model='GARCH', q=0.05)
+p_vals = pd.concat([p_vals, pd.DataFrame([asharv_var['p-value'], sharv_var['p-value'], garch_var['p-value']],
+                      index=['ASHARV', 'SHARV', 'GARCH'], columns=['95% VaR'])], axis=1)
+p_vals = p_vals,round(2)

@@ -41,8 +41,8 @@ def garch_forecast_var(data, model_res, q, parametric):
         quant = sp.stats.norm.ppf(q)
     else:
         quant = np.quantile(std_res, q)
-    VaR = np.sqrt(var) * quant
 
+    VaR = np.sqrt(var) * quant
     return VaR
 
 def out_of_sample(data, step=1, update=50, train_test_split=0.9, model='SHARV'):
@@ -116,7 +116,8 @@ def out_of_sample_var(data, update=50, train_test_split=0.9, model='SHARV', q=0.
         if model == 'GARCH':
             model_res = arch_model(train_data, mean="Zero", p=1, o=0, q=1).fit(disp=0)
         else:
-            pars = Sharv(train_data, asymmetry=asymmetry).fit().params
+            temp = Sharv(train_data, asymmetry=asymmetry).fit()
+            pars = temp.params
 
         for j in range(i, min(i + update, len(data) - 1)):
             # Use the same parameter to forecast when new data comes in until the next update round
