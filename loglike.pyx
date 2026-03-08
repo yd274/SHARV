@@ -19,9 +19,9 @@ def compute_loglike(double[:] par,
     # Parameter Mapping
     if asymmetry == 0:
         beta, omega1, gamma1 = par[0], par[1], par[2]
-        mu = omega2 = gamma2 = 0.0
+        mu = gamma2 = 0.0
     else:
-        mu, beta, omega1, gamma1, omega2, gamma2 = par[0], par[1], par[2], par[3], par[4], par[5]
+        mu, beta, omega1, gamma1, gamma2 = par[0], par[1], par[2], par[3], par[4]
 
     # Initial Variance Calculation (mean of squares)
     cdef double sum_sq = 0.0
@@ -32,13 +32,13 @@ def compute_loglike(double[:] par,
         y[t] = data[t] - mu * sqrt(sigma_sq[t-1])
         indicator = 1.0 if y[t] <= 0 else 0.0
         b_t = beta * sigma_sq[t - 1]
-        a_t = omega1 + omega2 * indicator + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]
+        a_t = omega1 + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]
 
         # Stability Barrier - Crucial for fmincon parity
         if b_t <= 1e-12 or a_t < 0:
             return 1e15
 
-        if omega1 == 0 and omega2 == 0 and gamma1 == 0 and gamma2 == 0:
+        if omega1 == 0 and gamma1 == 0 and gamma2 == 0:
             sigma_sq[t] = b_t
             log_f[t] = -0.5 * log(b_t) - 0.5 * (y[t]*y[t] / b_t) - LOG_SQRT_2PI
         else:

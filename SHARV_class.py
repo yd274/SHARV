@@ -32,7 +32,7 @@ class Sharv():
 
         garch = arch_model(self.data, mean="Zero", p=1, o=o, q=1).fit(disp=0)
         if self.asymmetry:
-            return [0, garch.params['beta[1]'], garch.params['omega'], garch.params['alpha[1]'], 0.001,
+            return [0.01, garch.params['beta[1]'], garch.params['omega'], garch.params['alpha[1]'],
                     garch.params['gamma[1]']]
         else:
             return [garch.params['beta[1]'], garch.params['omega'], garch.params['alpha[1]']]
@@ -47,9 +47,9 @@ class Sharv():
         """
         if not self.asymmetry:
             beta, omega1, gamma1 = par[0], par[1], par[2]
-            mu, omega2, gamma2 = 0.0, 0.0, 0.0
+            mu, gamma2 = 0.0, 0.0,
         else:
-            mu, beta, omega1, gamma1, omega2, gamma2 = par[0], par[1], par[2], par[3], par[4], par[5]
+            mu, beta, omega1, gamma1, gamma2 = par[0], par[1], par[2], par[3], par[4],
 
         n = len(self.data)
         sigma_sq = np.zeros(n)
@@ -66,7 +66,7 @@ class Sharv():
             # Separate negative returns
             indicator = 1.0 if y[t] <= 0 else 0.0
             b_t = beta * sigma_sq[t - 1]
-            a_t = omega1 + omega2 * indicator + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]
+            a_t = omega1 + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]
             if b_t <= 0 or a_t < 0:
                 log_f[t] = 1e10
                 continue
@@ -74,9 +74,9 @@ class Sharv():
             # Conditional variance of volatility
             vol_vol[t] = np.sqrt(
                 2 * (omega1 + gamma1 * sigma_sq[t - 1]) ** 2 + 2 * (omega1 + gamma1 * sigma_sq[t - 1]) *
-                (omega2 + gamma2 * sigma_sq[t - 1]) + 5 / 4 * (omega2 + gamma2 * sigma_sq[t - 1]) ** 2)
+                (gamma2 * sigma_sq[t - 1]) + 5 / 4 * (gamma2 * sigma_sq[t - 1]) ** 2)
 
-            if omega1 == 0 and omega2 == 0 and gamma1 == 0 and gamma2 == 0:
+            if omega1 == 0 and gamma1 == 0 and gamma2 == 0:
                 # Simply becomes a scaled standard normal
                 d_t = y[t] / np.sqrt(b_t)
                 sigma_sq[t] = b_t
@@ -115,17 +115,17 @@ class Sharv():
         temp_res = self.filter(par)
         if not self.asymmetry:
             beta, omega1, gamma1 = par[0], par[1], par[2]
-            mu, omega2, gamma2 = 0, 0, 0
+            mu, gamma2 = 0, 0
         else:
-            mu, beta, omega1, gamma1, omega2, gamma2 = par[0], par[1], par[2], par[3], par[4], par[5]
+            mu, beta, omega1, gamma1, gamma2 = par[0], par[1], par[2], par[3], par[4]
 
         var = temp_res["Volatility"] ** 2
         forecast = np.zeros(step)
-        forecast[0] = omega1 + 0.5 * omega2 + (beta + gamma1 + 0.5 * gamma2) * var[-1]
+        forecast[0] = omega1 + (beta + gamma1 + 0.5 * gamma2) * var[-1]
 
         # For multistep forecast, use recursive formula with unconditional mean
-        mean_vsq = (omega1 + 0.5 * omega2) / (1 - beta - gamma1 - 0.5 * gamma2)
-        mean_rsq = (1 + 2 * gamma1 + gamma2) * mean_vsq + 2 * omega1 + omega2
+        mean_vsq = (omega1) / (1 - beta - gamma1 - 0.5 * gamma2)
+        mean_rsq = (1 + 2 * gamma1 + gamma2) * mean_vsq + 2 * omega1
 
         if step > 1:
             for k in range(1, step):
@@ -133,7 +133,7 @@ class Sharv():
 
         return np.sqrt(forecast)
 
-    def VaR_forecast(self, par, q):
+    def VaR_forecast(self, par, q, parametric=True):
         """
         Value-at-Risk forecast under (A)SHARV by 3.11 of Ding, 2023
         :param par:
@@ -142,20 +142,23 @@ class Sharv():
         """
         if not self.asymmetry:
             beta, omega1, gamma1 = par[0], par[1], par[2]
-            mu, omega2, gamma2 = 0, 0, 0
+            mu, gamma2 = 0, 0
         else:
-            mu, beta, omega1, gamma1, omega2, gamma2 = par[0], par[1], par[2], par[3], par[4], par[5]
+            mu, beta, omega1, gamma1, gamma2 = par[0], par[1], par[2], par[3], par[4]
 
         vol = self.vol_forecast(par, step=1)
         std_res = self.filter(par)['Standardized residuals']
-        q = np.quantile(std_res, q)
+        if parametric:
+            quant = sp.stats.norm.ppf(q)
+        else:
+            quant = np.quantile(std_res, q)
 
         # Replace the quantile with empirical quantile in the formula 3.11 in Ding, 2022
         autoregressive_part = beta * vol[-1] ** 2
-        heteroskedastic_part = omega1 + omega2 + (gamma1 + gamma2) * vol[-1] ** 2
+        heteroskedastic_part = omega1 + (gamma1 + gamma2) * vol[-1] ** 2
         drift = mu * vol[-1]
 
-        return drift - np.sqrt((q ** 4) * heteroskedastic_part + (q ** 2) * autoregressive_part)
+        return drift - np.sqrt((quant ** 4) * heteroskedastic_part + (quant ** 2) * autoregressive_part)
 
     def fit(self, start_params=None, maxiter=10000, **kwargs):
         """
@@ -169,8 +172,8 @@ class Sharv():
             start_params = self._initial_guess()
 
         if self.asymmetry:
-            bounds = [(-np.inf, np.inf), (1e-6, 0.99), (1e-6, np.inf), (1e-6, 0.99), (1e-6, np.inf), (1e-6, 0.99)]
-            A = np.array([[0.0, 1.0, 0.0, 1.0, 0.0, 0.5]])
+            bounds = [(-np.inf, np.inf), (1e-6, 0.99), (1e-6, np.inf), (1e-6, 0.99), (1e-6, 0.99)]
+            A = np.array([[0.0, 1.0, 0.0, 1.0, 0.5]])
         else:
             bounds = [(1e-6, 0.99), (1e-6, np.inf), (1e-6, 0.99)]
             A = np.array([[1.0, 0.0, 1.0]])
@@ -201,7 +204,7 @@ class Sharv():
         loglike = -compute_loglike(pars, self.data, self.asymmetry) * len(self.data)
         bic = len(pars) * np.log(len(self.data)) - 2 * loglike
         bic_str = f"{len(pars) * np.log(len(self.data)) - 2 * loglike:.4f}"
-        par_name = ['mu', 'beta', 'alpha', 'psi', 'omega', 'phi'] if self.asymmetry else \
+        par_name = ['mu', 'beta', 'alpha', 'psi', 'phi'] if self.asymmetry else \
             ['beta', 'alpha', 'psi']
 
         # Create statsmodels-like summary table

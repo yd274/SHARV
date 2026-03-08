@@ -19970,7 +19970,6 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
   double __pyx_v_beta;
   double __pyx_v_omega1;
   double __pyx_v_gamma1;
-  double __pyx_v_omega2;
   double __pyx_v_gamma2;
   double __pyx_v_LOG_SQRT_2PI;
   double __pyx_v_total_ll;
@@ -19999,18 +19998,17 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
   double __pyx_t_11;
   double __pyx_t_12;
   double __pyx_t_13;
-  double __pyx_t_14;
+  int __pyx_t_14;
   int __pyx_t_15;
   int __pyx_t_16;
-  int __pyx_t_17;
+  Py_ssize_t __pyx_t_17;
   Py_ssize_t __pyx_t_18;
-  Py_ssize_t __pyx_t_19;
-  PyObject *(*__pyx_t_20)(PyObject *);
+  PyObject *(*__pyx_t_19)(PyObject *);
+  Py_ssize_t __pyx_t_20;
   Py_ssize_t __pyx_t_21;
   Py_ssize_t __pyx_t_22;
   Py_ssize_t __pyx_t_23;
-  Py_ssize_t __pyx_t_24;
-  int __pyx_t_25;
+  int __pyx_t_24;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -20177,7 +20175,7 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *     # Parameter Mapping
  *     if asymmetry == 0:             # <<<<<<<<<<<<<<
  *         beta, omega1, gamma1 = par[0], par[1], par[2]
- *         mu = omega2 = gamma2 = 0.0
+ *         mu = gamma2 = 0.0
  */
   __pyx_t_7 = (__pyx_v_asymmetry == 0);
   if (__pyx_t_7) {
@@ -20186,7 +20184,7 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *     # Parameter Mapping
  *     if asymmetry == 0:
  *         beta, omega1, gamma1 = par[0], par[1], par[2]             # <<<<<<<<<<<<<<
- *         mu = omega2 = gamma2 = 0.0
+ *         mu = gamma2 = 0.0
  *     else:
  */
     __pyx_t_8 = 0;
@@ -20202,12 +20200,11 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
     /* "loglike.pyx":22
  *     if asymmetry == 0:
  *         beta, omega1, gamma1 = par[0], par[1], par[2]
- *         mu = omega2 = gamma2 = 0.0             # <<<<<<<<<<<<<<
+ *         mu = gamma2 = 0.0             # <<<<<<<<<<<<<<
  *     else:
- *         mu, beta, omega1, gamma1, omega2, gamma2 = par[0], par[1], par[2], par[3], par[4], par[5]
+ *         mu, beta, omega1, gamma1, gamma2 = par[0], par[1], par[2], par[3], par[4]
  */
     __pyx_v_mu = 0.0;
-    __pyx_v_omega2 = 0.0;
     __pyx_v_gamma2 = 0.0;
 
     /* "loglike.pyx":20
@@ -20215,15 +20212,15 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *     # Parameter Mapping
  *     if asymmetry == 0:             # <<<<<<<<<<<<<<
  *         beta, omega1, gamma1 = par[0], par[1], par[2]
- *         mu = omega2 = gamma2 = 0.0
+ *         mu = gamma2 = 0.0
  */
     goto __pyx_L3;
   }
 
   /* "loglike.pyx":24
- *         mu = omega2 = gamma2 = 0.0
+ *         mu = gamma2 = 0.0
  *     else:
- *         mu, beta, omega1, gamma1, omega2, gamma2 = par[0], par[1], par[2], par[3], par[4], par[5]             # <<<<<<<<<<<<<<
+ *         mu, beta, omega1, gamma1, gamma2 = par[0], par[1], par[2], par[3], par[4]             # <<<<<<<<<<<<<<
  * 
  *     # Initial Variance Calculation (mean of squares)
  */
@@ -20238,14 +20235,11 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
     __pyx_t_12 = (*((double *) ( /* dim=0 */ (__pyx_v_par.data + __pyx_t_8 * __pyx_v_par.strides[0]) )));
     __pyx_t_8 = 4;
     __pyx_t_13 = (*((double *) ( /* dim=0 */ (__pyx_v_par.data + __pyx_t_8 * __pyx_v_par.strides[0]) )));
-    __pyx_t_8 = 5;
-    __pyx_t_14 = (*((double *) ( /* dim=0 */ (__pyx_v_par.data + __pyx_t_8 * __pyx_v_par.strides[0]) )));
     __pyx_v_mu = __pyx_t_11;
     __pyx_v_beta = __pyx_t_10;
     __pyx_v_omega1 = __pyx_t_9;
     __pyx_v_gamma1 = __pyx_t_12;
-    __pyx_v_omega2 = __pyx_t_13;
-    __pyx_v_gamma2 = __pyx_t_14;
+    __pyx_v_gamma2 = __pyx_t_13;
   }
   __pyx_L3:;
 
@@ -20265,13 +20259,13 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *     sigma_sq[0] = sum_sq / n
  * 
  */
-  __pyx_t_15 = __pyx_v_n;
-  __pyx_t_16 = __pyx_t_15;
-  for (__pyx_t_17 = 0; __pyx_t_17 < __pyx_t_16; __pyx_t_17+=1) {
-    __pyx_v_i = __pyx_t_17;
+  __pyx_t_14 = __pyx_v_n;
+  __pyx_t_15 = __pyx_t_14;
+  for (__pyx_t_16 = 0; __pyx_t_16 < __pyx_t_15; __pyx_t_16+=1) {
+    __pyx_v_i = __pyx_t_16;
     __pyx_t_8 = __pyx_v_i;
-    __pyx_t_18 = __pyx_v_i;
-    __pyx_v_sum_sq = (__pyx_v_sum_sq + ((*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_8 * __pyx_v_data.strides[0]) ))) * (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_18 * __pyx_v_data.strides[0]) )))));
+    __pyx_t_17 = __pyx_v_i;
+    __pyx_v_sum_sq = (__pyx_v_sum_sq + ((*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_8 * __pyx_v_data.strides[0]) ))) * (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_17 * __pyx_v_data.strides[0]) )))));
   }
 
   /* "loglike.pyx":29
@@ -20281,8 +20275,8 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  * 
  *     for t in range(1, n):
  */
-  __pyx_t_18 = 0;
-  *((double *) ( /* dim=0 */ (__pyx_v_sigma_sq.data + __pyx_t_18 * __pyx_v_sigma_sq.strides[0]) )) = (__pyx_v_sum_sq / ((double)__pyx_v_n));
+  __pyx_t_17 = 0;
+  *((double *) ( /* dim=0 */ (__pyx_v_sigma_sq.data + __pyx_t_17 * __pyx_v_sigma_sq.strides[0]) )) = (__pyx_v_sum_sq / ((double)__pyx_v_n));
 
   /* "loglike.pyx":31
  *     sigma_sq[0] = sum_sq / n
@@ -20306,28 +20300,28 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   if (likely(PyList_CheckExact(__pyx_t_1)) || PyTuple_CheckExact(__pyx_t_1)) {
     __pyx_t_3 = __pyx_t_1; __Pyx_INCREF(__pyx_t_3);
-    __pyx_t_19 = 0;
-    __pyx_t_20 = NULL;
+    __pyx_t_18 = 0;
+    __pyx_t_19 = NULL;
   } else {
-    __pyx_t_19 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 31, __pyx_L1_error)
+    __pyx_t_18 = -1; __pyx_t_3 = PyObject_GetIter(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 31, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_20 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_3); if (unlikely(!__pyx_t_20)) __PYX_ERR(0, 31, __pyx_L1_error)
+    __pyx_t_19 = __Pyx_PyObject_GetIterNextFunc(__pyx_t_3); if (unlikely(!__pyx_t_19)) __PYX_ERR(0, 31, __pyx_L1_error)
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   for (;;) {
-    if (likely(!__pyx_t_20)) {
+    if (likely(!__pyx_t_19)) {
       if (likely(PyList_CheckExact(__pyx_t_3))) {
         {
           Py_ssize_t __pyx_temp = __Pyx_PyList_GET_SIZE(__pyx_t_3);
           #if !CYTHON_ASSUME_SAFE_MACROS
           if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 31, __pyx_L1_error)
           #endif
-          if (__pyx_t_19 >= __pyx_temp) break;
+          if (__pyx_t_18 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_19); __Pyx_INCREF(__pyx_t_1); __pyx_t_19++; if (unlikely((0 < 0))) __PYX_ERR(0, 31, __pyx_L1_error)
+        __pyx_t_1 = PyList_GET_ITEM(__pyx_t_3, __pyx_t_18); __Pyx_INCREF(__pyx_t_1); __pyx_t_18++; if (unlikely((0 < 0))) __PYX_ERR(0, 31, __pyx_L1_error)
         #else
-        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_19); __pyx_t_19++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_18); __pyx_t_18++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       } else {
@@ -20336,17 +20330,17 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
           #if !CYTHON_ASSUME_SAFE_MACROS
           if (unlikely((__pyx_temp < 0))) __PYX_ERR(0, 31, __pyx_L1_error)
           #endif
-          if (__pyx_t_19 >= __pyx_temp) break;
+          if (__pyx_t_18 >= __pyx_temp) break;
         }
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_19); __Pyx_INCREF(__pyx_t_1); __pyx_t_19++; if (unlikely((0 < 0))) __PYX_ERR(0, 31, __pyx_L1_error)
+        __pyx_t_1 = PyTuple_GET_ITEM(__pyx_t_3, __pyx_t_18); __Pyx_INCREF(__pyx_t_1); __pyx_t_18++; if (unlikely((0 < 0))) __PYX_ERR(0, 31, __pyx_L1_error)
         #else
-        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_19); __pyx_t_19++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
+        __pyx_t_1 = __Pyx_PySequence_ITEM(__pyx_t_3, __pyx_t_18); __pyx_t_18++; if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 31, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_1);
         #endif
       }
     } else {
-      __pyx_t_1 = __pyx_t_20(__pyx_t_3);
+      __pyx_t_1 = __pyx_t_19(__pyx_t_3);
       if (unlikely(!__pyx_t_1)) {
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
@@ -20367,61 +20361,61 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *         indicator = 1.0 if y[t] <= 0 else 0.0
  *         b_t = beta * sigma_sq[t - 1]
  */
-    __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
-    __pyx_t_18 = __pyx_t_21;
+    __pyx_t_20 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_20 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
+    __pyx_t_17 = __pyx_t_20;
     __pyx_t_1 = __Pyx_PyInt_SubtractObjC(__pyx_v_t, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_t_1); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
+    __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_t_1); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_8 = __pyx_t_22;
-    __pyx_t_23 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_23 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
-    __pyx_t_24 = __pyx_t_23;
-    *((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_24 * __pyx_v_y.strides[0]) )) = ((*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_18 * __pyx_v_data.strides[0]) ))) - (__pyx_v_mu * sqrt((*((double *) ( /* dim=0 */ (__pyx_v_sigma_sq.data + __pyx_t_8 * __pyx_v_sigma_sq.strides[0]) ))))));
+    __pyx_t_8 = __pyx_t_21;
+    __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 32, __pyx_L1_error)
+    __pyx_t_23 = __pyx_t_22;
+    *((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_23 * __pyx_v_y.strides[0]) )) = ((*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_17 * __pyx_v_data.strides[0]) ))) - (__pyx_v_mu * sqrt((*((double *) ( /* dim=0 */ (__pyx_v_sigma_sq.data + __pyx_t_8 * __pyx_v_sigma_sq.strides[0]) ))))));
 
     /* "loglike.pyx":33
  *     for t in range(1, n):
  *         y[t] = data[t] - mu * sqrt(sigma_sq[t-1])
  *         indicator = 1.0 if y[t] <= 0 else 0.0             # <<<<<<<<<<<<<<
  *         b_t = beta * sigma_sq[t - 1]
- *         a_t = omega1 + omega2 * indicator + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]
+ *         a_t = omega1 + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]
  */
-    __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L1_error)
-    __pyx_t_8 = __pyx_t_22;
+    __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 33, __pyx_L1_error)
+    __pyx_t_8 = __pyx_t_21;
     __pyx_t_7 = ((*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_8 * __pyx_v_y.strides[0]) ))) <= 0.0);
     if (__pyx_t_7) {
-      __pyx_t_14 = 1.0;
+      __pyx_t_13 = 1.0;
     } else {
-      __pyx_t_14 = 0.0;
+      __pyx_t_13 = 0.0;
     }
-    __pyx_v_indicator = __pyx_t_14;
+    __pyx_v_indicator = __pyx_t_13;
 
     /* "loglike.pyx":34
  *         y[t] = data[t] - mu * sqrt(sigma_sq[t-1])
  *         indicator = 1.0 if y[t] <= 0 else 0.0
  *         b_t = beta * sigma_sq[t - 1]             # <<<<<<<<<<<<<<
- *         a_t = omega1 + omega2 * indicator + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]
+ *         a_t = omega1 + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]
  * 
  */
     __pyx_t_1 = __Pyx_PyInt_SubtractObjC(__pyx_v_t, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 34, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_t_1); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 34, __pyx_L1_error)
+    __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_t_1); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 34, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_8 = __pyx_t_22;
+    __pyx_t_8 = __pyx_t_21;
     __pyx_v_b_t = (__pyx_v_beta * (*((double *) ( /* dim=0 */ (__pyx_v_sigma_sq.data + __pyx_t_8 * __pyx_v_sigma_sq.strides[0]) ))));
 
     /* "loglike.pyx":35
  *         indicator = 1.0 if y[t] <= 0 else 0.0
  *         b_t = beta * sigma_sq[t - 1]
- *         a_t = omega1 + omega2 * indicator + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]             # <<<<<<<<<<<<<<
+ *         a_t = omega1 + (gamma1 + gamma2 * indicator) * sigma_sq[t - 1]             # <<<<<<<<<<<<<<
  * 
  *         # Stability Barrier - Crucial for fmincon parity
  */
     __pyx_t_1 = __Pyx_PyInt_SubtractObjC(__pyx_v_t, __pyx_int_1, 1, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 35, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_t_1); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 35, __pyx_L1_error)
+    __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_t_1); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 35, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_8 = __pyx_t_22;
-    __pyx_v_a_t = ((__pyx_v_omega1 + (__pyx_v_omega2 * __pyx_v_indicator)) + ((__pyx_v_gamma1 + (__pyx_v_gamma2 * __pyx_v_indicator)) * (*((double *) ( /* dim=0 */ (__pyx_v_sigma_sq.data + __pyx_t_8 * __pyx_v_sigma_sq.strides[0]) )))));
+    __pyx_t_8 = __pyx_t_21;
+    __pyx_v_a_t = (__pyx_v_omega1 + ((__pyx_v_gamma1 + (__pyx_v_gamma2 * __pyx_v_indicator)) * (*((double *) ( /* dim=0 */ (__pyx_v_sigma_sq.data + __pyx_t_8 * __pyx_v_sigma_sq.strides[0]) )))));
 
     /* "loglike.pyx":38
  * 
@@ -20430,14 +20424,14 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *             return 1e15
  * 
  */
-    __pyx_t_25 = (__pyx_v_b_t <= 1e-12);
-    if (!__pyx_t_25) {
+    __pyx_t_24 = (__pyx_v_b_t <= 1e-12);
+    if (!__pyx_t_24) {
     } else {
-      __pyx_t_7 = __pyx_t_25;
+      __pyx_t_7 = __pyx_t_24;
       goto __pyx_L9_bool_binop_done;
     }
-    __pyx_t_25 = (__pyx_v_a_t < 0.0);
-    __pyx_t_7 = __pyx_t_25;
+    __pyx_t_24 = (__pyx_v_a_t < 0.0);
+    __pyx_t_7 = __pyx_t_24;
     __pyx_L9_bool_binop_done:;
     if (__pyx_t_7) {
 
@@ -20446,7 +20440,7 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *         if b_t <= 1e-12 or a_t < 0:
  *             return 1e15             # <<<<<<<<<<<<<<
  * 
- *         if omega1 == 0 and omega2 == 0 and gamma1 == 0 and gamma2 == 0:
+ *         if omega1 == 0 and gamma1 == 0 and gamma2 == 0:
  */
       __Pyx_XDECREF(__pyx_r);
       __Pyx_INCREF(__pyx_float_1e15);
@@ -20466,63 +20460,57 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
     /* "loglike.pyx":41
  *             return 1e15
  * 
- *         if omega1 == 0 and omega2 == 0 and gamma1 == 0 and gamma2 == 0:             # <<<<<<<<<<<<<<
+ *         if omega1 == 0 and gamma1 == 0 and gamma2 == 0:             # <<<<<<<<<<<<<<
  *             sigma_sq[t] = b_t
  *             log_f[t] = -0.5 * log(b_t) - 0.5 * (y[t]*y[t] / b_t) - LOG_SQRT_2PI
  */
-    __pyx_t_25 = (__pyx_v_omega1 == 0.0);
-    if (__pyx_t_25) {
+    __pyx_t_24 = (__pyx_v_omega1 == 0.0);
+    if (__pyx_t_24) {
     } else {
-      __pyx_t_7 = __pyx_t_25;
+      __pyx_t_7 = __pyx_t_24;
       goto __pyx_L12_bool_binop_done;
     }
-    __pyx_t_25 = (__pyx_v_omega2 == 0.0);
-    if (__pyx_t_25) {
+    __pyx_t_24 = (__pyx_v_gamma1 == 0.0);
+    if (__pyx_t_24) {
     } else {
-      __pyx_t_7 = __pyx_t_25;
+      __pyx_t_7 = __pyx_t_24;
       goto __pyx_L12_bool_binop_done;
     }
-    __pyx_t_25 = (__pyx_v_gamma1 == 0.0);
-    if (__pyx_t_25) {
-    } else {
-      __pyx_t_7 = __pyx_t_25;
-      goto __pyx_L12_bool_binop_done;
-    }
-    __pyx_t_25 = (__pyx_v_gamma2 == 0.0);
-    __pyx_t_7 = __pyx_t_25;
+    __pyx_t_24 = (__pyx_v_gamma2 == 0.0);
+    __pyx_t_7 = __pyx_t_24;
     __pyx_L12_bool_binop_done:;
     if (__pyx_t_7) {
 
       /* "loglike.pyx":42
  * 
- *         if omega1 == 0 and omega2 == 0 and gamma1 == 0 and gamma2 == 0:
+ *         if omega1 == 0 and gamma1 == 0 and gamma2 == 0:
  *             sigma_sq[t] = b_t             # <<<<<<<<<<<<<<
  *             log_f[t] = -0.5 * log(b_t) - 0.5 * (y[t]*y[t] / b_t) - LOG_SQRT_2PI
  *         else:
  */
-      __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L1_error)
-      __pyx_t_8 = __pyx_t_22;
+      __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L1_error)
+      __pyx_t_8 = __pyx_t_21;
       *((double *) ( /* dim=0 */ (__pyx_v_sigma_sq.data + __pyx_t_8 * __pyx_v_sigma_sq.strides[0]) )) = __pyx_v_b_t;
 
       /* "loglike.pyx":43
- *         if omega1 == 0 and omega2 == 0 and gamma1 == 0 and gamma2 == 0:
+ *         if omega1 == 0 and gamma1 == 0 and gamma2 == 0:
  *             sigma_sq[t] = b_t
  *             log_f[t] = -0.5 * log(b_t) - 0.5 * (y[t]*y[t] / b_t) - LOG_SQRT_2PI             # <<<<<<<<<<<<<<
  *         else:
  *             # Main logic loop using C-level math functions
  */
-      __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 43, __pyx_L1_error)
-      __pyx_t_8 = __pyx_t_22;
       __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 43, __pyx_L1_error)
-      __pyx_t_18 = __pyx_t_21;
-      __pyx_t_23 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_23 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 43, __pyx_L1_error)
-      __pyx_t_24 = __pyx_t_23;
-      *((double *) ( /* dim=0 */ (__pyx_v_log_f.data + __pyx_t_24 * __pyx_v_log_f.strides[0]) )) = (((-0.5 * log(__pyx_v_b_t)) - (0.5 * (((*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_8 * __pyx_v_y.strides[0]) ))) * (*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_18 * __pyx_v_y.strides[0]) )))) / __pyx_v_b_t))) - __pyx_v_LOG_SQRT_2PI);
+      __pyx_t_8 = __pyx_t_21;
+      __pyx_t_20 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_20 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 43, __pyx_L1_error)
+      __pyx_t_17 = __pyx_t_20;
+      __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 43, __pyx_L1_error)
+      __pyx_t_23 = __pyx_t_22;
+      *((double *) ( /* dim=0 */ (__pyx_v_log_f.data + __pyx_t_23 * __pyx_v_log_f.strides[0]) )) = (((-0.5 * log(__pyx_v_b_t)) - (0.5 * (((*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_8 * __pyx_v_y.strides[0]) ))) * (*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_17 * __pyx_v_y.strides[0]) )))) / __pyx_v_b_t))) - __pyx_v_LOG_SQRT_2PI);
 
       /* "loglike.pyx":41
  *             return 1e15
  * 
- *         if omega1 == 0 and omega2 == 0 and gamma1 == 0 and gamma2 == 0:             # <<<<<<<<<<<<<<
+ *         if omega1 == 0 and gamma1 == 0 and gamma2 == 0:             # <<<<<<<<<<<<<<
  *             sigma_sq[t] = b_t
  *             log_f[t] = -0.5 * log(b_t) - 0.5 * (y[t]*y[t] / b_t) - LOG_SQRT_2PI
  */
@@ -20537,11 +20525,11 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *             d2_t = sqrt((d1_t - b_t) / (2.0 * a_t))
  */
     /*else*/ {
+      __pyx_t_20 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_20 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 46, __pyx_L1_error)
+      __pyx_t_17 = __pyx_t_20;
       __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 46, __pyx_L1_error)
-      __pyx_t_18 = __pyx_t_21;
-      __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 46, __pyx_L1_error)
-      __pyx_t_8 = __pyx_t_22;
-      __pyx_v_d1_t = sqrt(((__pyx_v_b_t * __pyx_v_b_t) + ((4.0 * __pyx_v_a_t) * ((*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_18 * __pyx_v_y.strides[0]) ))) * (*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_8 * __pyx_v_y.strides[0]) )))))));
+      __pyx_t_8 = __pyx_t_21;
+      __pyx_v_d1_t = sqrt(((__pyx_v_b_t * __pyx_v_b_t) + ((4.0 * __pyx_v_a_t) * ((*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_17 * __pyx_v_y.strides[0]) ))) * (*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_8 * __pyx_v_y.strides[0]) )))))));
 
       /* "loglike.pyx":48
  *             d1_t = sqrt(b_t * b_t + 4.0 * a_t * (y[t] * y[t]))
@@ -20559,15 +20547,15 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *             sigma_sq[t] = b_t + a_t * (d_t * d_t)
  * 
  */
-      __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 49, __pyx_L1_error)
-      __pyx_t_8 = __pyx_t_22;
+      __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 49, __pyx_L1_error)
+      __pyx_t_8 = __pyx_t_21;
       __pyx_t_7 = ((*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_8 * __pyx_v_y.strides[0]) ))) >= 0.0);
       if (__pyx_t_7) {
-        __pyx_t_14 = 1.0;
+        __pyx_t_13 = 1.0;
       } else {
-        __pyx_t_14 = -1.0;
+        __pyx_t_13 = -1.0;
       }
-      __pyx_v_d_t = (__pyx_t_14 * __pyx_v_d2_t);
+      __pyx_v_d_t = (__pyx_t_13 * __pyx_v_d2_t);
 
       /* "loglike.pyx":50
  *             d2_t = sqrt((d1_t - b_t) / (2.0 * a_t))
@@ -20576,8 +20564,8 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  * 
  *             if y[t] == 0:
  */
-      __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 50, __pyx_L1_error)
-      __pyx_t_8 = __pyx_t_22;
+      __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 50, __pyx_L1_error)
+      __pyx_t_8 = __pyx_t_21;
       *((double *) ( /* dim=0 */ (__pyx_v_sigma_sq.data + __pyx_t_8 * __pyx_v_sigma_sq.strides[0]) )) = (__pyx_v_b_t + (__pyx_v_a_t * (__pyx_v_d_t * __pyx_v_d_t)));
 
       /* "loglike.pyx":52
@@ -20587,8 +20575,8 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *                 log_f[t] = -LOG_SQRT_2PI - log(sqrt(b_t))
  *             else:
  */
-      __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 52, __pyx_L1_error)
-      __pyx_t_8 = __pyx_t_22;
+      __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 52, __pyx_L1_error)
+      __pyx_t_8 = __pyx_t_21;
       __pyx_t_7 = ((*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_8 * __pyx_v_y.strides[0]) ))) == 0.0);
       if (__pyx_t_7) {
 
@@ -20599,8 +20587,8 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *             else:
  *                 log_f[t] = log(fabs(y[t] / (d_t * d1_t))) - LOG_SQRT_2PI - 0.5 * (d_t * d_t)
  */
-        __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 53, __pyx_L1_error)
-        __pyx_t_8 = __pyx_t_22;
+        __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 53, __pyx_L1_error)
+        __pyx_t_8 = __pyx_t_21;
         *((double *) ( /* dim=0 */ (__pyx_v_log_f.data + __pyx_t_8 * __pyx_v_log_f.strides[0]) )) = ((-__pyx_v_LOG_SQRT_2PI) - log(sqrt(__pyx_v_b_t)));
 
         /* "loglike.pyx":52
@@ -20610,7 +20598,7 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *                 log_f[t] = -LOG_SQRT_2PI - log(sqrt(b_t))
  *             else:
  */
-        goto __pyx_L16;
+        goto __pyx_L15;
       }
 
       /* "loglike.pyx":55
@@ -20621,13 +20609,13 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  *         total_ll += log_f[t]
  */
       /*else*/ {
-        __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 55, __pyx_L1_error)
-        __pyx_t_8 = __pyx_t_22;
         __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 55, __pyx_L1_error)
-        __pyx_t_18 = __pyx_t_21;
-        *((double *) ( /* dim=0 */ (__pyx_v_log_f.data + __pyx_t_18 * __pyx_v_log_f.strides[0]) )) = ((log(fabs(((*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_8 * __pyx_v_y.strides[0]) ))) / (__pyx_v_d_t * __pyx_v_d1_t)))) - __pyx_v_LOG_SQRT_2PI) - (0.5 * (__pyx_v_d_t * __pyx_v_d_t)));
+        __pyx_t_8 = __pyx_t_21;
+        __pyx_t_20 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_20 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 55, __pyx_L1_error)
+        __pyx_t_17 = __pyx_t_20;
+        *((double *) ( /* dim=0 */ (__pyx_v_log_f.data + __pyx_t_17 * __pyx_v_log_f.strides[0]) )) = ((log(fabs(((*((double *) ( /* dim=0 */ (__pyx_v_y.data + __pyx_t_8 * __pyx_v_y.strides[0]) ))) / (__pyx_v_d_t * __pyx_v_d1_t)))) - __pyx_v_LOG_SQRT_2PI) - (0.5 * (__pyx_v_d_t * __pyx_v_d_t)));
       }
-      __pyx_L16:;
+      __pyx_L15:;
     }
     __pyx_L11:;
 
@@ -20638,8 +20626,8 @@ static PyObject *__pyx_pf_7loglike_compute_loglike(CYTHON_UNUSED PyObject *__pyx
  * 
  *     negloglike = -total_ll / n
  */
-    __pyx_t_22 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_22 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L1_error)
-    __pyx_t_8 = __pyx_t_22;
+    __pyx_t_21 = __Pyx_PyIndex_AsSsize_t(__pyx_v_t); if (unlikely((__pyx_t_21 == (Py_ssize_t)-1) && PyErr_Occurred())) __PYX_ERR(0, 57, __pyx_L1_error)
+    __pyx_t_8 = __pyx_t_21;
     __pyx_v_total_ll = (__pyx_v_total_ll + (*((double *) ( /* dim=0 */ (__pyx_v_log_f.data + __pyx_t_8 * __pyx_v_log_f.strides[0]) ))));
 
     /* "loglike.pyx":31

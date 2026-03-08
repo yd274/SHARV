@@ -16,17 +16,17 @@ def pdf_sharv(par, data, model='SHARV'):
     """
     if model == 'SHARV':
         beta, omega1, gamma1 = par[0], par[1], par[2]
-        mu, omega2, gamma2 = 0.0, 0.0, 0.0
+        mu, gamma2 = 0.0, 0.0
     elif model == 'ASHARV':
-        mu, beta, omega1, gamma1, omega2, gamma2 = par[0], par[1], par[2], par[3], par[4], par[5]
+        mu, beta, omega1, gamma1, gamma2 = par[0], par[1], par[2], par[3], par[4]
     elif model == 'GARCH':
         omega, beta, alpha = par[0], par[1], par[2]
 
     if model == 'SHARV' or model == 'ASHARV':
-        sigma_0 = (omega1 + 0.5 * omega2 ) / (1 - beta - gamma1 - 0.5 * gamma2)
+        sigma_0 = (omega1) / (1 - beta - gamma1 - 0.5 * gamma2)
         data = data - mu * np.sqrt(sigma_0)
         indicator = 1 if data <= 0 else 0
-        a_t = omega1 + gamma1 * sigma_0 + gamma2 * indicator * sigma_0 + omega2 * indicator
+        a_t = omega1 + gamma1 * sigma_0 + gamma2 * indicator * sigma_0
         b_t = beta * sigma_0
         d_t1 = np.sqrt(b_t * b_t + 4 * a_t * data * data)
         d_t2 = np.sign(data) * np.sqrt(d_t1 - b_t) / (np.sqrt(2 * a_t))
