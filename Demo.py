@@ -15,7 +15,7 @@ data = data.dropna()
 data['Close'] = np.log(data['Close']).diff() * 100
 
 y = data[['Close']].dropna()
-
+"""
 # Fit the sharv model
 sharv_res = Sharv(y).fit()
 print(sharv_res.summary())
@@ -130,3 +130,8 @@ mse_oos_10 = pd.DataFrame(mse_oos_10, columns=['MSE'])
 ratio = forecast_10[['SHARV', 'ASHARV', 'GARCH']].div(forecast_10['RV'], axis=0).pow(-1) # This is y / y_hat
 qlike_oos_10 = (ratio - np.log(ratio) - 1).mean()
 qlike_oos_10 = pd.DataFrame(qlike_oos_10, columns=['QLIKE'])
+"""
+# VaR forecast
+asharv_var = out_of_sample_var(y, model='ASHARV', train_test_split=0.85, q=0.01)
+sharv_var = out_of_sample_var(y, model='SHARV', train_test_split=0.8, q=0.01)
+garch_var = out_of_sample_var(y, model='GARCH', train_test_split=0.8, q=0.01)

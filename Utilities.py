@@ -1,7 +1,8 @@
 from SHARV_class import *
-from arch import arch_model
+from loglike import *
 import pandas as pd
 import numpy as np
+import scipy as sp
 
 def pdf_sharv(par, data, model='SHARV'):
     """
@@ -43,6 +44,14 @@ def pdf_sharv(par, data, model='SHARV'):
 
 
 def finite_difference(par, data, dh=1e-4, asymmetry=False):
+    """
+    Using finite difference method to calculate the Hessian of the loglikelihood function of (A)SHARV
+    :param par:
+    :param data:
+    :param dh: step size
+    :param asymmetry: whether SHARV or ASHARV
+    :return:
+    """
     if isinstance(data, pd.DataFrame):
         data = data.values.reshape(len(data))
 
@@ -81,6 +90,16 @@ def finite_difference(par, data, dh=1e-4, asymmetry=False):
     return hessian
 
 def score_vec(par, data, fun, dh=1e-7):
+    """
+    Use (central) finite difference method to calculate the average of the square score vector. This is the sandwich
+    form for robust standard error where the middle term is E[S @ S.T] where S is the score of loglikelihood. The
+    reason we use the score vector is so that we can use sample average to approximate the expectation
+    :param par:
+    :param data:
+    :param fun:
+    :param dh: step size
+    :return:
+    """
     if isinstance(data, pd.DataFrame):
         data = data.values.reshape(len(data))
 
@@ -93,14 +112,17 @@ def score_vec(par, data, fun, dh=1e-7):
         par_down = par.copy()
         par_up[i] = par[i] + h[i]
         par_down[i] = par[i] - h[i]
+        # The function should be Sharv().filter()['Loglikelihood vector'] which returns a vector of the loglikelihood
+        # function calculated at each data point
         fun_up = fun(par_up, data)
         fun_down = fun(par_down, data)
         temp = (fun_up - fun_down) / (2 * h[i])
         score[:, i] = np.array(temp).reshape(len(temp))
 
     score = np.delete(score, 0, axis=0)
+    # At each data point, calculate the outer product S @ S.T
     temp = np.einsum('ij,ik->ijk', score, score)
-
+    # Averaging over the sample to approximate the expectation
     score_vec = np.mean(temp, axis=0)
     score_vec = np.squeeze(score_vec)
     return score_vec

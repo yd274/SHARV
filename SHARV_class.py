@@ -21,12 +21,16 @@ class Sharv():
         self.asymmetry = asymmetry
 
     def _initial_guess(self):
+        """
+        The initial guess utilizing GARCH paramters for (A)SHARV
+        :return:
+        """
         if self.asymmetry:
             o = 1
         else:
             o = 0
-        garch = arch_model(self.data, mean="Zero", p=1, o=o, q=1).fit(disp=0)
 
+        garch = arch_model(self.data, mean="Zero", p=1, o=o, q=1).fit(disp=0)
         if self.asymmetry:
             return [0, garch.params['beta[1]'], garch.params['omega'], garch.params['alpha[1]'], 0.001,
                     garch.params['gamma[1]']]
@@ -34,6 +38,13 @@ class Sharv():
             return [garch.params['beta[1]'], garch.params['omega'], garch.params['alpha[1]']]
 
     def filter(self, par):
+        """
+        Filter function for the unobserved volatility and volatility of volatility processes. Also returns the vector
+        of loglikelihood function, which is userful for score vector calculation (which itself is for robust standard
+        error calculation), as well as the standardized residuals
+        :param par:
+        :return:
+        """
         if not self.asymmetry:
             beta, omega1, gamma1 = par[0], par[1], par[2]
             mu, omega2, gamma2 = 0.0, 0.0, 0.0
@@ -95,6 +106,12 @@ class Sharv():
                 'Standardized residuals': res}
 
     def vol_forecast(self, par, step=1):
+        """
+        volatility forecast under (A)SHARV
+        :param par:
+        :param step:
+        :return:
+        """
         temp_res = self.filter(par)
         if not self.asymmetry:
             beta, omega1, gamma1 = par[0], par[1], par[2]
@@ -116,7 +133,13 @@ class Sharv():
 
         return np.sqrt(forecast)
 
-    def VaR_forecast(self, par, q=0.05):
+    def VaR_forecast(self, par, q):
+        """
+        Value-at-Risk forecast under (A)SHARV by 3.11 of Ding, 2023
+        :param par:
+        :param q: quantile-level for VaR
+        :return:
+        """
         if not self.asymmetry:
             beta, omega1, gamma1 = par[0], par[1], par[2]
             mu, omega2, gamma2 = 0, 0, 0
@@ -124,6 +147,8 @@ class Sharv():
             mu, beta, omega1, gamma1, omega2, gamma2 = par[0], par[1], par[2], par[3], par[4], par[5]
 
         vol = self.vol_forecast(par, step=1)
+        std_res = self.filter(par)['Standardized residuals']
+        q = np.quantile(std_res, q)
 
         # Replace the quantile with empirical quantile in the formula 3.11 in Ding, 2022
         autoregressive_part = beta * vol[-1] ** 2
@@ -132,7 +157,14 @@ class Sharv():
 
         return drift - np.sqrt((q ** 4) * heteroskedastic_part + (q ** 2) * autoregressive_part)
 
-    def fit(self, start_params=None, maxiter=10000, maxfun=5000, **kwargs):
+    def fit(self, start_params=None, maxiter=10000, **kwargs):
+        """
+        Method for quasi-maximum estimation of the parameters of (A)SHARV
+        :param start_params:
+        :param maxiter:
+        :param kwargs:
+        :return:
+        """
         if start_params is None:
             start_params = self._initial_guess()
 

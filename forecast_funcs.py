@@ -23,6 +23,25 @@ def garch_forecast(data, model_res, step=1):
 
     return np.sqrt(var)
 
+def garch_forecast_var(data, model_res, q):
+    """
+    One-step ahead Value-at-Risk forecast under GARCH
+    :param data:
+    :param params:
+    :oaram q: Quantile level for VaR
+    :return:
+    """
+    beta = model_res.params['beta[1]']
+    omega = model_res.params['omega']
+    alpha = model_res.params['alpha[1]']
+
+    var = omega + beta * model_res.conditional_volatility[-1] ** 2 + alpha * data[-1] ** 2
+    std_res = model_res.std_resid
+    q = np.quantile(std_res, q)
+    VaR = np.sqrt(var) * q
+
+    return VaR
+
 def out_of_sample(data, step=1, update=50, train_test_split=0.9, model='SHARV'):
     """
     Out of sample volatility forecast for SHARV, ASHARV and GARCH
@@ -54,7 +73,8 @@ def out_of_sample(data, step=1, update=50, train_test_split=0.9, model='SHARV'):
             # Use the same parameter to forecast when new data comes in until the next update round
             temp_date = dates[j:j + step]
             if model == 'GARCH':
-                temp_forecast = garch_forecast(data[:j], model_res, step=step)
+                temp_model = arch_model(data[:j], mean="Zero", p=1, o=0, q=1).fix(model_res.params)
+                temp_forecast = garch_forecast(data[:j], temp_model, step=step)
             else:
                 temp_forecast = Sharv(data[:j], asymmetry=asymmetry).vol_forecast(pars, step=step)
 
@@ -62,3 +82,95 @@ def out_of_sample(data, step=1, update=50, train_test_split=0.9, model='SHARV'):
             forecast.append(temp)
 
     return forecast
+
+
+def out_of_sample_var(data, update=50, train_test_split=0.9, model='SHARV', q=0.05, return_pval=True):
+    """
+    Out of sample Value-at-Risk forecast for SHARV, ASHARV and GARCH
+    :param data: pass Series for easy comparison with realized volatility with dates
+    :param step: forecast step
+    :param update: how many step do you want to re-estimate the model.
+    :param train_test_split: percentage of training data
+    :param model:
+    :param return_pval: Whether to return the p-value Christoffersen (1998) coverage test for accuracy of VaR
+    :return: VaR, Conditional and Unconditional Coverage Ratios, Violation Ratio and p-value of Christoffersen test.
+    Recall that the null, H0: the proportion of failures is consistent with VaR confidence level and failures on
+    consecutive time periods are independent
+    """
+    if model == 'ASHARV':
+        asymmetry = True
+    else:
+        asymmetry = False
+
+    dates = data.index
+    data = data.values
+    train_len = int(len(data) * train_test_split)
+    forecast = []
+    indices = []
+    for i in range(train_len, len(data) - update - 1, update):
+        # Only update the parameter estimation every update-th time
+        train_data = data[:i]
+        if model == 'GARCH':
+            model_res = arch_model(train_data, mean="Zero", p=1, o=0, q=1).fit(disp=0)
+        else:
+            pars = Sharv(train_data, asymmetry=asymmetry).fit().params
+
+        for j in range(i, min(i + update, len(data) - 1)):
+            # Use the same parameter to forecast when new data comes in until the next update round
+            temp_date = dates[j:j + 1]
+            if model == 'GARCH':
+                temp_model = arch_model(data[:j], mean="Zero", p=1, o=0, q=1).fix(model_res.params)
+                temp_forecast = garch_forecast_var(data[:j], temp_model, q)
+            else:
+                temp_forecast = Sharv(data[:j], asymmetry=asymmetry).VaR_forecast(pars, q)
+
+            if return_pval:
+                if data[j] < temp_forecast:
+                    indices.append(1)
+                else:
+                    indices.append(0)
+
+            temp = pd.DataFrame(temp_forecast, index=temp_date, columns=['Forecast'])
+            forecast.append(temp)
+
+    if return_pval:
+        # Christoffersen (1998) conditional and unconditional coverage test. The idea is that for a 95% VaR for example,
+        # on average, in the future, there should be 5% returns fall just below this value. Count the number of returns
+        # that satisfies this category and asymptotically this counting process has a chi-squared distribution
+        n = len(indices)
+        n00 = np.zeros(n)
+        n01 = np.zeros(n)
+        n10 = np.zeros(n)
+        n11 = np.zeros(n)
+        for j in range(2, len(indices)):
+            if indices[j] == 1 and indices[j - 1] == 1:
+                n11[j] = 1
+            elif indices[j] == 0 and indices[j - 1] == 1:
+                n10[j] = 1
+            elif indices[j] == 1 and indices[j - 1] == 0:
+                n01[j] = 1
+            elif indices[j] == 0 and indices[j - 1] == 0:
+                n00[j] = 1
+
+        # Unconditional coverage
+        p1 = (np.sum(n01) + np.sum(n11)) / (np.sum(n11) + np.sum(n00) + np.sum(n01) + np.sum(n10))
+        N1 = np.sum(n01) + np.sum(n11)
+        N0 = np.sum(n00) + np.sum(n10)
+        p0 = 1 - p1
+        UC = np.sum(indices) / n
+        LR_UC = 2 * (np.log(UC ** np.sum(indices) * (1 - UC) ** (n - np.sum(indices))) -
+                     np.log(q ** np.sum(indices) * (1 - q) ** (n - np.sum(indices))))
+
+        VR = np.sum(indices) / (q * n)
+
+        # Conditional coverage and independence
+        p00 = np.sum(n00) / (np.sum(n00) + np.sum(n01))
+        p01 = np.sum(n01) / (np.sum(n00) + np.sum(n01))
+        p10 = np.sum(n10) / (np.sum(n10) + np.sum(n11))
+        p11 = np.sum(n11) / (np.sum(n10) + np.sum(n11))
+        LR_CCI = 2 * (np.log(p00 ** (np.sum(n00)) * p01 ** (np.sum(n01)) * p10 ** (np.sum(n10)) * p11 ** (np.sum(n11)))
+                      - np.log(p0 ** N0 * p1 ** N1))
+        LR_CC = LR_UC + LR_CCI
+
+    return {'VaR forecast': forecast, 'Conditional coverage': LR_CC, 'Unconditional coverage': LR_UC, 'Violation ratio':
+            VR, 'p-value': 1-sp.stats.chi2.cdf(LR_CC,2)}

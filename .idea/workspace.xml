@@ -5,17 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91bfd18-f6df-4b15-b93e-64b1a3498fd9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/forecast_funcs.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Demo.ipynb" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/Demo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/SHARV_class.py" beforeDir="false" afterPath="$PROJECT_DIR$/SHARV_class.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Utilities.py" beforeDir="false" afterPath="$PROJECT_DIR$/Utilities.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/lib.macosx-10.15-x86_64-cpython-313/loglike.cpython-313-darwin.so" beforeDir="false" afterPath="$PROJECT_DIR$/build/lib.macosx-10.15-x86_64-cpython-313/loglike.cpython-313-darwin.so" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/build/temp.macosx-10.15-x86_64-cpython-313/loglike.o" beforeDir="false" afterPath="$PROJECT_DIR$/build/temp.macosx-10.15-x86_64-cpython-313/loglike.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loglike.c" beforeDir="false" afterPath="$PROJECT_DIR$/loglike.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loglike.cpython-313-darwin.so" beforeDir="false" afterPath="$PROJECT_DIR$/loglike.cpython-313-darwin.so" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/loglike.pyx" beforeDir="false" afterPath="$PROJECT_DIR$/loglike.pyx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/forecast_funcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/forecast_funcs.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -83,7 +77,7 @@
       <workItem from="1772272198493" duration="25071000" />
       <workItem from="1772402588750" duration="2009000" />
       <workItem from="1772487807965" duration="33347000" />
-      <workItem from="1772834218319" duration="10303000" />
+      <workItem from="1772834218319" duration="17381000" />
     </task>
     <servers />
   </component>
@@ -91,7 +85,7 @@
     <option name="version" value="3" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/PythonProject$Demo.coverage" NAME="Demo Coverage Results" MODIFIED="1772843125394" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/PythonProject$Demo.coverage" NAME="Demo Coverage Results" MODIFIED="1772927166533" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/PythonProject$Utilities.coverage" NAME="Utilities Coverage Results" MODIFIED="1772665532276" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>
