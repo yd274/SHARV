@@ -5,13 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="f91bfd18-f6df-4b15-b93e-64b1a3498fd9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/LSTM_GARCH.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/PythonProject.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/PythonProject.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Demo.ipynb" beforeDir="false" afterPath="$PROJECT_DIR$/Demo.ipynb" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Demo.py" beforeDir="false" afterPath="$PROJECT_DIR$/Demo.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/forecast_funcs.py" beforeDir="false" afterPath="$PROJECT_DIR$/forecast_funcs.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/loglike.cpython-312-darwin.so" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
