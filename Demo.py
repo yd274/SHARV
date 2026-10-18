@@ -1,9 +1,12 @@
+import numpy as np
+
 from SHARV_class import *
 from Utilities import *
 import matplotlib.pyplot as plt
 from arch import arch_model
 from loglike import *
 from forecast_funcs import *
+from LSTM_GARCH import *
 
 
 data = pd.read_excel('Data/DJI.xlsx')
@@ -143,3 +146,21 @@ garch_var = out_of_sample_var(y, model='GARCH', q=0.05)
 p_vals = pd.concat([p_vals, pd.DataFrame([asharv_var['p-value'], sharv_var['p-value'], garch_var['p-value']],
                       index=['ASHARV', 'SHARV', 'GARCH'], columns=['95% VaR'])], axis=1)
 p_vals = p_vals,round(2)
+
+# LSTM
+r = torch.tensor(y.to_numpy(), dtype=torch.float32)
+n = len(r)
+train_end = int(n * 0.7)
+pipeline = VolatilityModel(hidden_dim=5, lr=0.005)
+pipeline.fit(y , epochs=300)
+
+vol = pipeline.predict(y.to_numpy())
+garch = arch_model(y, mean="Zero", p=1, o=0, q=1).fit(disp=0)
+sharv_res = Sharv(y).fit()
+plt.plot(pd.DataFrame(np.array(vol), index=y.index), label='LSTM')
+plt.plot(garch.conditional_volatility, label='GARCH')
+plt.plot(sharv_res.filter()['Volatility'], label='SHARV')
+plt.legend()
+plt.show()
+
+forecast = pipeline.forecast(y.to_numpy(), horizon=5)
